@@ -1,0 +1,41 @@
+Frontend
+
+1) Wireframe er lagt ved
+
+2) Flytter div-en i App.tsx sitt prosjekter.map() funksjon (som brukes for å vise frem prosjekter) til ny komponent
+for å forenkle App.tsx og gjøre det mer modulært (om jeg har tid skal jeg sjekke de eksisterende komponentene)
+
+3) Jeg har laget en custom hook, useProjects.ts, som henter prosjekter (fetchProjects) mens det å legge til og slette
+prosjekter fortsatt er i App.tsx, så forskjellen nå er at App.tsx ikke lenger bruker fetchProjects
+
+4) I applikasjonen brukes det to URL-er, localhost port 3000 /prosjekter og /prosjekter/${id}, så de ble flyttet
+til config.ts og App.tsx ble endret for å lese av fra config.ts
+
+5) Her står det hvis jeg bruker biblioteker som ofetch så skal jeg lage en service eller util-fil for disse og unngå
+å importere dem direkte i komponentene, men jeg bruker ikke slike biblioteker i applikasjonen akkurat nå
+
+6) Jeg har installert Zod og satt et krav om tittle bare for å vise at det fungerer, men det dukket opp en glitch
+slik at det ikke skjer en re-render etter at et nytt prosjekt er lagt til, så jeg brukte window.location.reload()
+
+7) Jeg har lagt til disse feltene ved å endre App.tsx, ProsjektformComponent.tsx, ProsjektKomponent.tsx og useProjects.ts
+Nå er det flere valg når man legger inn et prosjekt, der "published at" er string, "status" er enten draft eller published,
+og "tags" er string, og mens "published at" er string så settes datoen inn ved bruk av en input av type date, og "status"
+den velges ved å bruke select tag 
+
+8) Jeg har laget Layout.tsx, ProjectPage.tsx, og oppdatert App.tsx slik at all kode som var i App.tsx nå er i ProjectPage.tsx
+og så er det Layout.tsx med header, main og footer i en layout div. CSS ble flyttet over til main.tsx slik at nettstedet har den
+samme stilen som før endringen fra App.tsx til Layout/ProjectPage
+
+9) Jeg har allerede laget en custom hook, så den delen av oppgaven er løst. Skjema for å lage et prosjekt finnes allerede,
+og knapp for å slette et prosjekt finnes også.
+
+Backend
+
+1) Siden det nå brukes database har jeg laget en tabell i backend som støtter disse feltene
+
+2) Jeg installerte SQLite i backend mappen, og fikk skrevet om server.js slik at det ikke er basert på json men SQLite
+
+3) Det var noe problemer med Zod så jeg har ikke gjort denne oppgaven
+
+4) Jeg har erstattet funksjonene for å opprette, hente og slette prosjekter lagret i json med de larget i projects.db
+slik at frontend er helt funksjonell slik som det var med json
