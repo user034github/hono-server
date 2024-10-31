@@ -1,31 +1,54 @@
 import React, { useState } from 'react';
 
 interface Props {
-	handleSubmit: (event: React.FormEvent<HTMLFormElement>, tittel: string, beskrivelse: string) => void;
-	setTittel: React.Dispatch<React.SetStateAction<string>>;
-	setBeskrivelse: React.Dispatch<React.SetStateAction<string>>;
+    handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+    setTittel: (value: string) => void;
+    setBeskrivelse: (value: string) => void;
+    setPublishedAt: (value: string) => void;
+    setStatus: (value: 'draft' | 'published') => void; 
+    setTags: (value: string) => void; 
 }
 
-const ProsjektformComponent: React.FC<Props> = ({ handleSubmit, setTittel, setBeskrivelse }) => {
-	const [tittel, localSetTittel] = useState<string>('');
-	const [beskrivelse, localSetBeskrivelse] = useState<string>('');
-
-	const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-		handleSubmit(e, tittel, beskrivelse);
-		localSetTittel('');
-		localSetBeskrivelse('');
-	};
-
-	return (
-		<form id="legg-til-prosjekt-form" onSubmit={onSubmit}>
-			<h2>Legg til et nytt prosjekt</h2>
-			<input type="text" id="prosjekt-tittel" placeholder="Prosjekt Tittel" required value={tittel} 
-			onChange={(e) => localSetTittel(e.target.value)}/>
-			<textarea id="prosjekt-beskrivelse" placeholder="Prosjekt Beskrivelse" required value={beskrivelse}
-			onChange={(e) => localSetBeskrivelse(e.target.value)} />
-			<button type="submit">Legg til et prosjekt</button>
-		</form>
-	);
+const ProsjektformComponent: React.FC<Props> = ({
+    handleSubmit,
+    setTittel,
+    setBeskrivelse,
+    setPublishedAt,
+    setStatus,
+    setTags
+}) => {
+    return (
+        <form onSubmit={handleSubmit}>
+            <input
+              	type="text"
+                onChange={(e) => setTittel(e.target.value)}
+                placeholder="Tittel"
+            />
+            <textarea
+                onChange={(e) => setBeskrivelse(e.target.value)}
+                placeholder="Beskrivelse"
+            ></textarea>
+            <input
+                type="date"
+                onChange={(e) => setPublishedAt(e.target.value)}
+                placeholder="Published At"
+            />
+            <select
+                onChange={(e) => {
+                    setStatus(e.target.value as 'draft' | 'published');
+                }}
+	    >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+            </select>
+            <input
+                type="text"
+		onChange={(e) => setTags(e.target.value)}
+                placeholder="Tags (Kommaseparert)"
+            />
+            <button type="submit">Legg til et nytt prosjekt</button>
+        </form>
+    );
 };
 
 export default ProsjektformComponent;

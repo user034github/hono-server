@@ -1,18 +1,25 @@
 [
-	{
-		"id": 1,
-		"tittel": "Prosjekt 1",
-		"beskrivelse": "Prosjektbeskrivelse"
-	},
-	{
-		"id": 2,
-		"tittel": "Prosjekt 2",
-		"beskrivelse": "Prosjektbeskrivelse"
-	},
-	{
-		"id": 3,
-		"tittel": "Prosjekt 3",
-		"beskrivelse": "Prosjektbeskrivelse"
-	}
-
+  {
+    "id": 1,
+    "tittel": "Prosjekt 1",
+    "beskrivelse": "Prosjektbeskrivelse"
+  },
+  {
+    "id": 2,
+    "tittel": "Prosjekt 2",
+    "beskrivelse": "Prosjektbeskrivelse"
+  },
+  {
+    "id": 3,
+    "tittel": "Prosjekt 3",
+    "beskrivelse": "Prosjektbeskrivelse"
+  },
+  {
+    "id": 4,
+    "tittel": "a",
+    "beskrivelse": "",
+    "publishedAt": "",
+    "status": "draft",
+    "tags": ""
+  }
 ]

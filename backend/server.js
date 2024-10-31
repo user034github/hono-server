@@ -1,78 +1,76 @@
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
-import fs from 'fs/promises';
+import sqlite3 from 'better-sqlite3';
 import path from 'path';
 
 const app = new Hono();
 
+const dbPath = path.resolve('projects.db');
+const db = sqlite3(dbPath, { verbose: console.log }); 
+
 app.use('*', (context, next) => {
-    context.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-    context.header('Access-Control-Allow-Methods', 'GET, POST, DELETE'); 
-    context.header('Access-Control-Allow-Headers', 'Content-Type'); 
-    return next();
+	context.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+	context.header('Access-Control-Allow-Methods', 'GET, POST, DELETE'); 
+	context.header('Access-Control-Allow-Headers', 'Content-Type'); 
+	return next();
 });
 
 app.options('*', (context) => context.text('OK', 204));
 
-app.get("/", async (context) => {
-    const filePath = path.resolve("../frontend/index.html");
-    try {
-        const html = await fs.readFile(filePath, "utf8");
-        return context.text(html, 200, { "Content-Type": "text/html" });
-    } catch (error) {
-        return context.text(`Feil: ${error.message}`, 500, { "Content-Type": "text/plain" });
-    }
-});
+const initDb = () => {
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS prosjekter (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			tittel TEXT NOT NULL,
+			beskrivelse TEXT NOT NULL,
+			publishedAt TEXT,
+			status TEXT CHECK(status IN ('draft', 'published')),
+			tags TEXT
+		)
+	`);
+};
 
 app.get("/prosjekter", async (context) => {
-    const filePath = path.resolve("prosjekter.json");
-    try {
-        const json = await fs.readFile(filePath, "utf8");
-        return context.text(json, 200, { "Content-Type": "application/json" });
-    } catch (error) {
-        console.error(`Feil: ${error.message}`);
-        return context.text(`Feil: ${error.message}`, 500, { "Content-Type": "text/plain" });
-    }
+	try {
+		const projects = db.prepare("SELECT * FROM prosjekter").all();
+		return context.json(projects);
+	} catch (error) {
+		console.error(`Feil: ${error.message}`);
+		return context.text(`Feil: ${error.message}`, 500);
+	}
 });
 
 app.post('/prosjekter', async (context) => {
 	const data = await context.req.json();
-	const filePath = path.resolve('prosjekter.json');
-
 	try {
-		const fileContent = await fs.readFile(filePath, 'utf8');
-		const prosjekter = JSON.parse(fileContent);
-
-		const nyttId = prosjekter.length > 0 ? prosjekter[prosjekter.length - 1].id + 1 : 1;
-		const nyttProsjekt = { id: nyttId, ...data };
-		prosjekter.push(nyttProsjekt);
-	
-		await fs.writeFile(filePath, JSON.stringify(prosjekter, null, 2));
-
-		return context.json({ message: 'Prosjekt har blitt lagt til', project: nyttProsjekt });
-  } catch (error) {
-	  return context.json({ error: `Feil: ${error.message}` }, 500);
-  }
+		const stmt = db.prepare("INSERT INTO prosjekter (tittel, beskrivelse, publishedAt, status, tags) VALUES (?, ?, ?, ?, ?)");
+		const result = stmt.run(data.tittel, data.beskrivelse, data.publishedAt, data.status, data.tags);
+		
+		const newProject = { id: result.lastInsertRowid, ...data };
+		return context.json({ message: 'Prosjekt har blitt lagt til', project: newProject });
+	} catch (error) {
+		return context.json({ error: `Feil: ${error.message}` }, 500);
+	}
 });
 
 app.delete('/prosjekter/:id', async (context) => {
 	const id = Number(context.req.param('id'));
-	const filePath = path.resolve('prosjekter.json');
-
 	try {
-		const fileContent = await fs.readFile(filePath, 'utf8');
-		let prosjekter = JSON.parse(fileContent);
-		const oppdaterteProsjekter = prosjekter.filter((prosjekt) => prosjekt.id !== id);
-
-		if (prosjekter.length === oppdaterteProsjekter.length) {
-			return context.json({ error: 'Prosjekt har ikke blitt funnet' }, 404);
+		const stmt = db.prepare("DELETE FROM prosjekter WHERE id = ?");
+		const result = stmt.run(id);
+		
+		if (result.changes === 0) {
+			return context.json({ error: 'Prosjekt ikke funnet' }, 404);
 		}
-		await fs.writeFile(filePath, JSON.stringify(oppdaterteProsjekter, null, 2));
-
-		return context.text('Prosjekt har blitt slettet', 200);
+		return context.text('Prosjekt har blitt fjernet', 200);
 	} catch (error) {
-		return context.json({ error: `Feil: ${error.message}` }, 500);
-  }
+		return context.json({ error: `Error: ${error.message}` }, 500);
+	}
 });
 
-serve({ port: 3000, fetch: app.fetch }, (x) => console.log(`Serveren er aktiv: ${x.port}`));
+const startServer = () => {
+	initDb(); 
+	serve({ port: 3000, fetch: app.fetch }, (x) => console.log(`Serveren er aktiv: ${x.port}`));
+};
+
+startServer();
